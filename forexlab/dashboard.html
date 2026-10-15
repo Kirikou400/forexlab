@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17251f">
+  <title>ForexLab | Technical Research & Backtesting Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f6f2;
+      --surface: #ffffff;
+      --surface-subtle: #f8faf8;
+      --ink: #17251f;
+      --muted: #67786f;
+      --line: #dfe5df;
+      --line-focus: #177b58;
+      --green: #177b58;
+      --green-soft: #e4f2e9;
+      --green-dark: #0f543c;
+      --red: #bd5546;
+      --red-soft: #fae9e5;
+      --amber: #9d6a16;
+      --amber-soft: #fbf3e1;
+      --mono: "IBM Plex Mono", Consolas, monospace;
+      --sans: "DM Sans", "Segoe UI", sans-serif;
+      --shadow-sm: 0 1px 3px rgba(23,37,31,0.06);
+      --shadow-md: 0 4px 14px rgba(23,37,31,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(rgba(23, 37, 31, .028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 37, 31, .028) 1px, transparent 1px);
+      background-size: 28px 28px;
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    button, select, input { font: inherit; color: inherit; }
+    .topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 4vw;
+      color: #edf4ef;
+      background: #17251f;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .02em; }
+    .brand-mark {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      border: 1px solid #83b49a; border-radius: 4px;
+      color: #a8dfbe; font: 700 13px var(--mono); background: rgba(131,180,154,0.12);
+    }
+    .brand-info { display: flex; flex-direction: column; }
+    .brand-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .brand small { color: #aab9af; font: 10px var(--mono); letter-spacing: .05em; }
+    .top-nav { display: flex; gap: 6px; }
+    .nav-tab {
+      padding: 6px 14px; border: 1px solid transparent; border-radius: 4px;
+      background: transparent; color: #b6c8bd; cursor: pointer;
+      font-weight: 600; font-size: 13px; transition: all .15s ease;
+    }
+    .nav-tab:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .nav-tab.active { color: #fff; background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.18); }
+    .top-status { display: flex; align-items: center; gap: 8px; color: #c3d2c8; font: 11px var(--mono); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #d49b43; }
+
+    main { width: min(1320px, 94vw); margin: 24px auto 60px; }
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+    .eyebrow { margin: 0 0 6px; color: var(--green); font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+    h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+    .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    select, .button, input {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--surface);
+      padding: 0 12px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    select:focus, input:focus, button:focus-visible { border-color: var(--line-focus); box-shadow: 0 0 0 2px rgba(23,123,88,.15); }
+    .button { cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .button-primary { border-color: var(--green); background: var(--green); color: #fff; }
+    .button-primary:hover { background: var(--green-dark); }
+    .button-secondary { background: var(--surface); border-color: var(--line); color: var(--ink); }
+    .button-secondary:hover { background: #edf2ed; }
+    .button:disabled { opacity: .55; cursor: wait; }
+
+    .notice {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      margin-bottom: 20px; padding: 10px 16px; border: 1px solid #e8d8ad; border-left: 4px solid #c89131;
+      background: #fffdf8; color: #57492c; font-size: 12px; border-radius: 4px;
+    }
+    .notice strong { font-weight: 700; }
+
+    .overview {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line); border-radius: 6px;
+      background: var(--surface); margin-bottom: 20px;
+      box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .metric { min-width: 0; padding: 14px 18px; border-right: 1px solid var(--line); }
+    .metric:last-child { border-right: 0; }
+    .metric-label { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .04em; }
+    .metric-value { margin-top: 6px; overflow: hidden; text-overflow: ellipsis; font: 600 20px var(--mono); white-space: nowrap; }
+    .metric-detail { margin-top: 4px; color: var(--muted); font-size: 11px; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(310px, .9fr); gap: 20px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .panel-head {
+      min-height: 48px; display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--surface-subtle);
+    }
+    .panel-head h2 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+    .panel-meta { color: var(--muted); font: 10px var(--mono); }
+    .chart-header-actions { display: flex; align-items: center; gap: 8px; }
+    .chart-toggle-btn {
+      padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px;
+      background: var(--surface); font: 500 11px var(--mono); cursor: pointer;
+    }
+    .chart-toggle-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+    .chart-wrap { position: relative; height: 320px; padding: 12px 14px 6px; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .chart-footer { display: flex; justify-content: space-between; padding: 6px 16px 12px; color: var(--muted); font: 10px var(--mono); border-top: 1px dashed #e8eee8; }
+    .chart-legend { display: flex; gap: 14px; align-items: center; }
+    .legend-tag { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+    .signals { margin-top: 20px; }
+    .signal-list { display: grid; }
+    .signal-row {
+      padding: 16px; border-bottom: 1px solid var(--line); cursor: pointer;
+      transition: background-color .15s; position: relative;
+    }
+    .signal-row:hover { background-color: #f7faf7; }
+    .signal-row.selected { background-color: #f0f7f3; border-left: 4px solid var(--green); padding-left: 13px; }
+    .signal-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .signal-name { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+    .side { padding: 3px 8px; border-radius: 3px; font: 700 11px var(--mono); letter-spacing: .02em; }
+    .side.buy { color: var(--green); background: var(--green-soft); }
+    .side.sell { color: var(--red); background: var(--red-soft); }
+    .score { text-align: right; font: 700 18px var(--mono); line-height: 1.1; }
+    .score small { display: block; margin-top: 2px; color: var(--muted); font: 9px var(--sans); }
+    .score-track { height: 4px; margin-top: 10px; background: #e8eee8; border-radius: 2px; overflow: hidden; }
+    .score-fill { height: 100%; background: var(--green); }
+    .score-fill.mid { background: #c89131; }
+    .score-fill.low { background: var(--red); }
+    .reason { margin: 10px 0 12px; color: #43544b; font-size: 12px; line-height: 1.5; }
+    .risk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: var(--surface); padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; }
+    .risk-item span { display: block; color: var(--muted); font: 9px var(--mono); text-transform: uppercase; }
+    .risk-item strong { display: block; margin-top: 3px; font: 600 12px var(--mono); }
+
+    .empty { padding: 36px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+    .empty-actions { margin-top: 14px; }
+
+    .side-panel { display: grid; gap: 20px; }
+    .calc { padding: 16px; }
+    .calc label { display: block; margin: 0 0 5px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+    .calc input { width: 100%; margin-bottom: 12px; font: 14px var(--mono); }
+    .calc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .calc-stat-box { background: var(--surface-subtle); padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; }
+    .calc-stat-box span { color: var(--muted); font: 9px var(--mono); text-transform: uppercase; display: block; }
+    .calc-stat-box strong { font: 600 14px var(--mono); margin-top: 3px; display: block; }
+    .calc-result { padding-top: 12px; border-top: 1px solid var(--line); }
+    .calc-result span { color: var(--muted); font-size: 11px; }
+    .calc-result strong { display: block; margin-top: 4px; font: 700 20px var(--mono); color: var(--green); }
+    .calc-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+
+    .alerts { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; }
+    .alerts strong { display: block; font-size: 13px; }
+    .alerts small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .alert-toggle { width: 38px; height: 22px; appearance: none; border: 1px solid #bdc9c0; border-radius: 12px; background: #e6ebe6; cursor: pointer; position: relative; }
+    .alert-toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform .18s; }
+    .alert-toggle:checked { border-color: var(--green); background: var(--green); }
+    .alert-toggle:checked::after { transform: translateX(16px); }
+
+    /* Backtester Form & Results */
+    .bt-form { padding: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) auto; gap: 12px; align-items: flex-end; border-bottom: 1px solid var(--line); background: var(--surface-subtle); }
+    .bt-field label { display: block; font: 10px var(--mono); text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .bt-field select, .bt-field input { width: 100%; min-height: 38px; }
+    .bt-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; padding: 18px; }
+    .bt-metric-card { border: 1px solid var(--line); border-radius: 5px; padding: 12px 14px; background: var(--surface); }
+    .bt-metric-card span { display: block; font: 10px var(--mono); text-transform: uppercase; color: var(--muted); }
+    .bt-metric-card strong { display: block; font: 600 17px var(--mono); margin-top: 4px; }
+    .bt-metric-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .bt-chart-wrap { height: 260px; padding: 14px 18px; position: relative; }
+    .bt-table-wrap { padding: 0 18px 18px; overflow-x: auto; max-height: 320px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--line); color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+    td { padding: 8px 10px; border-bottom: 1px solid var(--line); font: 12px var(--mono); }
+    tr:hover td { background-color: var(--surface-subtle); }
+
+    .foot { display: flex; justify-content: space-between; gap: 15px; margin-top: 24px; color: var(--muted); font-size: 11px; line-height: 1.5; flex-wrap: wrap; }
+    #message { position: fixed; right: 24px; bottom: 24px; z-index: 100; max-width: min(440px, calc(100vw - 32px)); padding: 12px 16px; border-radius: 5px; background: #17251f; color: #fff; box-shadow: var(--shadow-md); font-size: 13px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; }
+    #message.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .overview { grid-template-columns: 1fr 1fr; }
+      .metric:nth-child(2) { border-right: 0; }
+      .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .bt-form { grid-template-columns: 1fr 1fr; }
+      .bt-form button { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">FL</span>
+      <div class="brand-info">
+        <span class="brand-title">ForexLab</span>
+        <small>RESEARCH DESK / LOCAL</small>
+      </div>
+    </div>
+    <nav class="top-nav" aria-label="Terminal views">
+      <button class="nav-tab active" data-tab="signalsView">Signal Desk</button>
+      <button class="nav-tab" data-tab="backtestView">Strategy Backtester</button>
+      <button class="nav-tab" data-tab="historyView">Signal Log</button>
+    </nav>
+    <div class="top-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="connectionStatus">Checking feed…</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Tab 1: Signals Desk -->
+    <div id="signalsView" class="tab-content active">
+      <section class="page-head">
+        <div>
+          <p class="eyebrow">Technical Confluence / Real-Time Analysis</p>
+          <h1>Multi-Strategy Signal Desk</h1>
+          <p class="subtitle">Ranked setups from completed candles. Confluence heuristic across 5 technical strategies.</p>
+        </div>
+        <div class="toolbar">
+          <select id="symbol" aria-label="Currency pair">
+            <option>EUR/USD</option>
+            <option>GBP/USD</option>
+            <option>USD/JPY</option>
+            <option>AUD/USD</option>
+          </select>
+          <select id="timeframe" aria-label="Timeframe">
+            <option value="15min">15 min</option>
+            <option value="1h" selected>1 hour</option>
+            <option value="4h">4 hours</option>
+          </select>
+          <button class="button button-primary" id="refreshButton">Refresh market data</button>
+          <button class="button button-secondary" id="loadDemoBtn" title="Load synthetic candles to explore features without an API key">Load Demo Data</button>
+        </div>
+      </section>
+
+      <div class="notice">
+        <span><strong>Honest Research Engine:</strong> Scores are confluence heuristics, not win probabilities. Orders are disabled. Fills evaluate at next-candle open.</span>
+        <span>Version 0.2.0 · Localhost</span>
+      </div>
+
+      <section class="overview" aria-label="Market overview">
+        <div class="metric">
+          <div class="metric-label">Selected Pair</div>
+          <div class="metric-value" id="pairValue">EUR/USD</div>
+          <div class="metric-detail" id="providerValue">Twelve Data · Candle Feed</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Last Closed Price</div>
+          <div class="metric-value" id="priceValue">--</div>
+          <div class="metric-detail" id="candleValue">Waiting for candle</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Active Setups</div>
+          <div class="metric-value" id="setupValue">0</div>
+          <div class="metric-detail">Across 5 strategies</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Data Feed Status</div>
+          <div class="metric-value" id="feedValue">Waiting</div>
+          <div class="metric-detail" id="feedDetail">Refresh to evaluate</div>
+        </div>
+      </section>
+
+      <div class="layout">
+        <section>
+          <div class="panel">
+            <div class="panel-head">
+              <h2 id="chartTitle">EUR/USD · 1h</h2>
+              <div class="chart-header-actions">
+                <button class="chart-toggle-btn active" id="btnModeCandles">Candles</button>
+                <button class="chart-toggle-btn" id="btnModeLine">Line</button>
+                <span class="panel-meta" id="chartCandleCount">0 BARS</span>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="priceChart" aria-label="Forex price chart"></canvas>
+            </div>
+            <div class="chart-footer">
+              <span id="chartStart">--</span>
+              <div class="chart-legend">
+                <span class="legend-tag"><span class="legend-dot" style="background:#177b58"></span> Bullish / TP</span>
+                <span class="legend-tag"><span class="legend-dot" style="background:#bd5546"></span> Bearish / SL</span>
+                <span class="legend-tag"><span class="legend-dot" style="background:#2f5379"></span> Selected Entry</span>
+              </div>
+              <span id="chartEnd">--</span>
+            </div>
+          </div>
+
+          <div class="panel signals">
+            <div class="panel-head">
+              <h2>Ranked Technical Setups</h2>
+              <span class="panel-meta" id="signalsCountMeta">Click a setup to inspect levels & size</span>
+            </div>
+            <div id="signalList" class="signal-list">
+              <div class="empty">
+                No candles are stored yet.
+                <div class="empty-actions">
+                  <button class="button button-primary" onclick="seedDemoData()">Load Demo Candles</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Interactive Position Sizer</h2>
+              <span class="panel-meta" id="sizerSetupLabel">AUTO-LINKED</span>
+            </div>
+            <div class="calc">
+              <div class="calc-row">
+                <div>
+                  <label for="balance">Account Balance ($)</label>
+                  <input id="balance" type="number" min="100" step="500" value="10000">
+                </div>
+                <div>
+                  <label for="riskPercent">Risk % Per Trade</label>
+                  <input id="riskPercent" type="number" min="0.1" max="10" step="0.5" value="1.0">
+                </div>
+              </div>
+              <div class="calc-row">
+                <div class="calc-stat-box">
+                  <span>Risk Capital</span>
+                  <strong id="sizerRiskAmount">$100.00</strong>
+                </div>
+                <div class="calc-stat-box">
+                  <span>Stop Distance</span>
+                  <strong id="sizerStopPips">-- pips</strong>
+                </div>
+              </div>
+              <div class="calc-result">
+                <span>Calculated Position Size</span>
+                <strong id="sizeValue">-- units</strong>
+                <div style="margin-top:6px; font-size:12px; color:var(--muted);" id="sizeLots">-- standard lots</div>
+              </div>
+              <p class="calc-note">Assumes quote currency is USD (EUR/USD, GBP/USD, AUD/USD). Always verify contract specification, margin requirement, and broker leverage rules.</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Macro & Sentiment Gate</h2>
+              <span class="panel-meta">FILTER</span>
+            </div>
+            <div style="padding: 16px; font-size: 12px; color: var(--muted); line-height: 1.5;">
+              <strong style="display:block; color:var(--ink); margin-bottom:4px;">Licensed News & Calendar Offline</strong>
+              Macro events and economic releases are not currently connected. Confluence scores automatically renormalize technical and volatility weights.
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Browser Notifications</h2>
+              <span class="panel-meta">LOCAL DESK</span>
+            </div>
+            <div class="alerts">
+              <div>
+                <strong>Alert on new setup</strong>
+                <small id="alertStatus">Off</small>
+              </div>
+              <input class="alert-toggle" id="alertToggle" type="checkbox" aria-label="Toggle notifications">
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Tab 2: Strategy Backtester -->
+    <div id="backtestView" class="tab-content">
+      <section class="page-head">
+        <div>
+          <p class="eyebrow">Honest Execution Simulation</p>
+          <h1>Strategy Backtester</h1>
+          <p class="subtitle">Next-candle open fill, bid/ask spread and slippage charged, stop checked first in intra-bar hits.</p>
+        </div>
+      </section>
+
+      <div class="panel" style="margin-bottom: 20px;">
+        <form id="backtestForm" class="bt-form">
+          <div class="bt-field">
+            <label for="btStrategy">Strategy</label>
+            <select id="btStrategy">
+              <option value="ema_cross">EMA Cross (20/50)</option>
+              <option value="sma_cross">SMA Cross (20/50)</option>
+              <option value="macd_cross">MACD Cross (12/26/9)</option>
+              <option value="rsi_reversal">RSI Reversal (14)</option>
+              <option value="donchian">Donchian Breakout (20)</option>
+            </select>
+          </div>
+          <div class="bt-field">
+            <label for="btSymbol">Pair</label>
+            <select id="btSymbol">
+              <option>EUR/USD</option>
+              <option>GBP/USD</option>
+              <option>USD/JPY</option>
+              <option>AUD/USD</option>
+            </select>
+          </div>
+          <div class="bt-field">
+            <label for="btTimeframe">Timeframe</label>
+            <select id="btTimeframe">
+              <option value="15min">15 min</option>
+              <option value="1h" selected>1 hour</option>
+              <option value="4h">4 hours</option>
+            </select>
+          </div>
+          <div class="bt-field">
+            <label for="btSplit">Dataset Split</label>
+            <select id="btSplit">
+              <option value="train" selected>Train (First 50%)</option>
+              <option value="validation">Validation (Next 25%)</option>
+              <option value="test">Test (Locked final 25%)</option>
+            </select>
+          </div>
+          <div class="bt-field">
+            <label for="btRR">Reward : Risk</label>
+            <input id="btRR" type="number" step="0.5" value="2.0">
+          </div>
+          <div class="bt-field">
+            <label for="btRisk">Risk %</label>
+            <input id="btRisk" type="number" step="0.5" value="1.0">
+          </div>
+          <button type="submit" class="button button-primary" id="btnRunBacktest">Run Backtest</button>
+        </form>
+
+        <div id="btMetricsContainer" class="bt-metrics-grid">
+          <div class="bt-metric-card"><span>Total Trades</span><strong id="btTrades">--</strong><small id="btWinsLosses">-- wins / -- losses</small></div>
+          <div class="bt-metric-card"><span>Win Rate</span><strong id="btWinRate">--</strong><small id="btWinCI">95% CI: --</small></div>
+          <div class="bt-metric-card"><span>Expectancy (R)</span><strong id="btExpectancy">--</strong><small id="btExpCI">95% CI: --</small></div>
+          <div class="bt-metric-card"><span>Profit Factor</span><strong id="btProfitFactor">--</strong><small id="btBreakeven">Breakeven: --%</small></div>
+          <div class="bt-metric-card"><span>Net Return</span><strong id="btNetReturn">--</strong><small>Compounded</small></div>
+          <div class="bt-metric-card"><span>Max Drawdown</span><strong id="btMaxDD">--</strong><small id="btLosingStreak">Losing streak: --</small></div>
+        </div>
+
+        <div class="panel-head">
+          <h2>Compounded Equity Curve ($10,000 Start)</h2>
+          <span class="panel-meta" id="btWindowRange">RUN A BACKTEST ABOVE</span>
+        </div>
+        <div class="bt-chart-wrap">
+          <canvas id="equityChart" aria-label="Backtest equity curve chart"></canvas>
+        </div>
+
+        <div class="panel-head" style="margin-top: 10px;">
+          <h2>Executed Trades Sample</h2>
+          <span class="panel-meta" id="btTradeTableCount">Showing up to 100 recent trades</span>
+        </div>
+        <div class="bt-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Entry Time (UTC)</th>
+                <th>Exit Time (UTC)</th>
+                <th>Side</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Payoff (R)</th>
+                <th>Exit Reason</th>
+                <th>Bars Held</th>
+              </tr>
+            </thead>
+            <tbody id="btTradeTableBody">
+              <tr><td colspan="8" style="text-align:center; color:var(--muted); padding:20px;">No backtest run yet. Select parameters and click Run Backtest.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Signal Log -->
+    <div id="historyView" class="tab-content">
+      <section class="page-head">
+        <div>
+          <p class="eyebrow">Audit Trail & Archive</p>
+          <h1>Signal Log & History</h1>
+          <p class="subtitle">Persisted setups recorded across symbols, timeframes, and strategies.</p>
+        </div>
+        <div class="toolbar">
+          <button class="button button-secondary" id="btnRefreshHistory">Refresh Log</button>
+        </div>
+      </section>
+
+      <div class="panel">
+        <div class="bt-table-wrap" style="padding-top: 14px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Detected At (UTC)</th>
+                <th>Pair</th>
+                <th>TF</th>
+                <th>Strategy</th>
+                <th>Side</th>
+                <th>Score</th>
+                <th>Reference</th>
+                <th>Stop</th>
+                <th>Target</th>
+                <th>Stop (pips)</th>
+                <th>Reasoning</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr><td colspan="11" style="text-align:center; color:var(--muted); padding:24px;">No signals logged yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <span>ForexLab Research Terminal · Academic & Research Evaluation Only. Not Investment Advice.</span>
+      <span>Spreads and slippage are modeled; real spreads widen dramatically around high-impact news.</span>
+    </footer>
+  </main>
+
+  <div id="message" role="status" aria-live="polite"></div>
+
+  <script>
+    // Elements
+    const symbolSelect = document.getElementById('symbol');
+    const timeframeSelect = document.getElementById('timeframe');
+    const refreshButton = document.getElementById('refreshButton');
+    const loadDemoBtn = document.getElementById('loadDemoBtn');
+    const signalList = document.getElementById('signalList');
+    const canvas = document.getElementById('priceChart');
+    const equityCanvas = document.getElementById('equityChart');
+    const btnModeCandles = document.getElementById('btnModeCandles');
+    const btnModeLine = document.getElementById('btnModeLine');
+
+    let dashboard = null;
+    let refreshTimer = null;
+    let lastSignalKeys = new Set();
+    let alertEnabled = false;
+    let messageTimer;
+    let chartMode = 'candles'; // 'candles' or 'line'
+    let selectedSignal = null;
+
+    // Tab Navigation
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const target = document.getElementById(tab.dataset.tab);
+        if (target) target.classList.add('active');
+        if (tab.dataset.tab === 'signalsView') {
+          drawChart(dashboard?.candles || []);
+        } else if (tab.dataset.tab === 'historyView') {
+          loadSignalHistory();
+        }
+      });
+    });
+
+    function notify(message) {
+      const box = document.getElementById('message');
+      box.textContent = message;
+      box.classList.add('visible');
+      clearTimeout(messageTimer);
+      messageTimer = setTimeout(() => box.classList.remove('visible'), 4000);
+    }
+
+    function fmtPrice(value, symbol = symbolSelect.value) {
+      if (value == null || !Number.isFinite(Number(value))) return '--';
+      const digits = (symbol || '').endsWith('JPY') ? 3 : 5;
+      return Number(value).toFixed(digits);
+    }
+
+    function fmtTime(value) {
+      if (!value) return '--';
+      return new Intl.DateTimeFormat(undefined, {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+      }).format(new Date(value)) + ' UTC';
+    }
+
+    function setStatus(status, detail) {
+      const stale = status === 'stale';
+      const ready = status === 'ready';
+      document.getElementById('connectionStatus').textContent = ready ? 'Data current' : stale ? 'Data is stale' : 'No candles loaded';
+      document.getElementById('statusDot').style.background = ready ? '#5eb384' : stale ? '#d49b43' : '#bd5546';
+      document.getElementById('feedValue').textContent = ready ? 'Current' : stale ? 'Stale' : 'Awaiting Data';
+      document.getElementById('feedDetail').textContent = detail || 'Refresh to load stored data';
+    }
+
+    // Chart Mode Toggle
+    btnModeCandles.addEventListener('click', () => {
+      chartMode = 'candles';
+      btnModeCandles.classList.add('active');
+      btnModeLine.classList.remove('active');
+      drawChart(dashboard?.candles || []);
+    });
+    btnModeLine.addEventListener('click', () => {
+      chartMode = 'line';
+      btnModeLine.classList.add('active');
+      btnModeCandles.classList.remove('active');
+      drawChart(dashboard?.candles || []);
+    });
+
+    // Draw Price Chart (Candlestick or Line + Overlay)
+    function drawChart(candles) {
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+      const ctx = canvas.getContext('2d');
+      ctx.scale(ratio, ratio);
+      const width = rect.width;
+      const height = rect.height;
+      ctx.clearRect(0, 0, width, height);
+
+      if (!candles || candles.length < 2) {
+        ctx.fillStyle = '#67786f';
+        ctx.font = '13px DM Sans, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No candle history loaded. Click "Load Demo Data" or "Refresh" to load.', width / 2, height / 2);
+        return;
+      }
+
+      document.getElementById('chartCandleCount').textContent = `${candles.length} BARS`;
+      document.getElementById('chartStart').textContent = fmtTime(candles[0].time);
+      document.getElementById('chartEnd').textContent = fmtTime(candles[candles.length - 1].time);
+
+      let low = Math.min(...candles.map(c => c.low));
+      let high = Math.max(...candles.map(c => c.high));
+
+      // Expand bounds if selected signal SL / TP extend beyond
+      if (selectedSignal) {
+        if (selectedSignal.stop) { low = Math.min(low, selectedSignal.stop); high = Math.max(high, selectedSignal.stop); }
+        if (selectedSignal.target) { low = Math.min(low, selectedSignal.target); high = Math.max(high, selectedSignal.target); }
+      }
+
+      const padding = { top: 18, right: 65, bottom: 25, left: 16 };
+      const chartH = height - padding.top - padding.bottom;
+      const chartW = width - padding.left - padding.right;
+      const range = Math.max(high - low, Math.abs(high) * 0.0001);
+
+      const getY = (val) => padding.top + (high - val) / range * chartH;
+      const getX = (idx) => padding.left + (idx + 0.5) / candles.length * chartW;
+
+      // Grid lines
+      ctx.strokeStyle = '#e6ebe6';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        const pVal = low + (high - low) * (i / 4);
+        const gy = getY(pVal);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, gy);
+        ctx.lineTo(width - padding.right, gy);
+        ctx.stroke();
+
+        ctx.fillStyle = '#7a8c82';
+        ctx.font = '10px IBM Plex Mono, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(fmtPrice(pVal), width - padding.right + 6, gy + 3);
+      }
+
+      // Draw Candlesticks or Line
+      const barWidth = Math.max(2, Math.floor(chartW / candles.length * 0.72));
+
+      if (chartMode === 'candles') {
+        candles.forEach((c, idx) => {
+          const cx = getX(idx);
+          const oY = getY(c.open);
+          const cY = getY(c.close);
+          const hY = getY(c.high);
+          const lY = getY(c.low);
+          const isUp = c.close >= c.open;
+          const color = isUp ? '#177b58' : '#bd5546';
+
+          // Wick
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(cx, hY);
+          ctx.lineTo(cx, lY);
+          ctx.stroke();
+
+          // Body
+          const topY = Math.min(oY, cY);
+          const bodyH = Math.max(1.5, Math.abs(cY - oY));
+          ctx.fillStyle = color;
+          ctx.fillRect(cx - barWidth / 2, topY, barWidth, bodyH);
+        });
+      } else {
+        // Line mode
+        ctx.beginPath();
+        candles.forEach((c, idx) => {
+          const cx = getX(idx);
+          const cy = getY(c.close);
+          if (idx === 0) ctx.moveTo(cx, cy);
+          else ctx.lineTo(cx, cy);
+        });
+        const rising = candles[candles.length - 1].close >= candles[0].close;
+        ctx.strokeStyle = rising ? '#177b58' : '#bd5546';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Selected Signal Overlays (Entry, Stop Loss, Take Profit)
+      if (selectedSignal) {
+        const drawLevel = (val, color, label, dashed = false) => {
+          if (!val) return;
+          const ly = getY(val);
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.5;
+          if (dashed) ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, ly);
+          ctx.lineTo(width - padding.right, ly);
+          ctx.stroke();
+
+          // Label pill on price axis
+          ctx.fillStyle = color;
+          ctx.fillRect(width - padding.right + 2, ly - 8, 60, 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '9px IBM Plex Mono, monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(label, width - padding.right + 5, ly + 3);
+          ctx.restore();
+        };
+
+        drawLevel(selectedSignal.price, '#2f5379', 'ENTRY');
+        drawLevel(selectedSignal.stop, '#bd5546', 'STOP', true);
+        drawLevel(selectedSignal.target, '#177b58', 'TARGET', true);
+      }
+    }
+
+    function renderSignals(signals) {
+      document.getElementById('setupValue').textContent = signals.length;
+      document.getElementById('signalsCountMeta').textContent = `${signals.length} setup${signals.length === 1 ? '' : 's'} identified`;
+
+      if (!signals.length) {
+        selectedSignal = null;
+        signalList.innerHTML = '<div class="empty">No strategy triggered on the latest closed candle. That is a valid, normal result; waiting for high-confluence setups.</div>';
+        updatePositionSize();
+        drawChart(dashboard?.candles || []);
+        return;
+      }
+
+      // Default select first signal if none selected or previous no longer in list
+      if (!selectedSignal || !signals.some(s => s.strategy === selectedSignal.strategy && s.direction === selectedSignal.direction)) {
+        selectedSignal = signals[0];
+      }
+
+      signalList.innerHTML = signals.map((signal, idx) => {
+        const isSelected = selectedSignal && selectedSignal.strategy === signal.strategy && selectedSignal.direction === signal.direction;
+        const tone = signal.confidence >= 70 ? '' : signal.confidence >= 45 ? 'mid' : 'low';
+        return `
+          <article class="signal-row ${isSelected ? 'selected' : ''}" data-index="${idx}">
+            <div class="signal-top">
+              <div class="signal-name">
+                <span class="side ${signal.direction.toLowerCase()}">${signal.direction}</span>
+                <span>${signal.symbol}</span>
+                <span class="panel-meta">${signal.strategy.replaceAll('_', ' ').toUpperCase()}</span>
+              </div>
+              <div class="score">${signal.confidence}<small>CONFLUENCE / 100</small></div>
+            </div>
+            <div class="score-track"><div class="score-fill ${tone}" style="width:${signal.confidence}%"></div></div>
+            <p class="reason">${signal.reasoning}</p>
+            <div class="risk-grid">
+              <div class="risk-item"><span>Entry Ref</span><strong>${fmtPrice(signal.price)}</strong></div>
+              <div class="risk-item"><span>Stop Loss</span><strong>${fmtPrice(signal.stop)}</strong></div>
+              <div class="risk-item"><span>Take Profit</span><strong>${fmtPrice(signal.target)}</strong></div>
+              <div class="risk-item"><span>Risk Pips</span><strong>${signal.stop_pips} pips</strong></div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Add click listeners to select signal
+      document.querySelectorAll('.signal-row').forEach(row => {
+        row.addEventListener('click', () => {
+          const idx = Number(row.dataset.index);
+          selectedSignal = signals[idx];
+          document.querySelectorAll('.signal-row').forEach(r => r.classList.remove('selected'));
+          row.classList.add('selected');
+          updatePositionSize();
+          drawChart(dashboard?.candles || []);
+        });
+      });
+
+      updatePositionSize();
+      drawChart(dashboard?.candles || []);
+      checkForNewSignals(signals);
+    }
+
+    function checkForNewSignals(signals) {
+      const current = new Set(signals.map(s => `${s.symbol}:${s.timeframe}:${s.strategy}:${s.direction}:${s.created_at}`));
+      if (alertEnabled && lastSignalKeys.size && 'Notification' in window && Notification.permission === 'granted') {
+        for (const signal of signals) {
+          const key = `${signal.symbol}:${signal.timeframe}:${signal.strategy}:${signal.direction}:${signal.created_at}`;
+          if (!lastSignalKeys.has(key)) {
+            new Notification(`${signal.symbol} ${signal.direction} Setup`, {
+              body: `${signal.strategy} trigger · Confluence ${signal.confidence}/100. Stop: ${signal.stop_pips} pips.`
+            });
+          }
+        }
+      }
+      lastSignalKeys = current;
+    }
+
+    function updatePositionSize() {
+      const balance = Number(document.getElementById('balance').value);
+      const risk = Number(document.getElementById('riskPercent').value);
+      const sig = selectedSignal || dashboard?.signals?.[0];
+
+      if (!sig || !sig.stop_pips || balance <= 0 || risk <= 0) {
+        document.getElementById('sizeValue').textContent = '--';
+        document.getElementById('sizeLots').textContent = '-- standard lots';
+        document.getElementById('sizerRiskAmount').textContent = `$${(balance * risk / 100).toFixed(2)}`;
+        document.getElementById('sizerStopPips').textContent = '--';
+        document.getElementById('sizerSetupLabel').textContent = 'NO SETUP';
+        return;
+      }
+
+      const riskDollar = balance * risk / 100;
+      document.getElementById('sizerRiskAmount').textContent = `$${riskDollar.toFixed(2)}`;
+      document.getElementById('sizerStopPips').textContent = `${sig.stop_pips} pips`;
+      document.getElementById('sizerSetupLabel').textContent = `${sig.symbol} ${sig.direction} (${sig.strategy.toUpperCase()})`;
+
+      const pipVal = sig.symbol.endsWith('JPY') ? 0.01 : 0.0001;
+      const stopDistance = sig.stop_pips * pipVal;
+      const units = Math.floor(riskDollar / stopDistance);
+      const lots = (units / 100000).toFixed(2);
+      const miniLots = (units / 10000).toFixed(1);
+
+      document.getElementById('sizeValue').textContent = `${units.toLocaleString()} units`;
+      document.getElementById('sizeLots').textContent = `${lots} standard lots (${miniLots} mini lots)`;
+    }
+
+    function render(data) {
+      dashboard = data;
+      const symbol = data.symbol || symbolSelect.value;
+      const timeframe = data.timeframe || timeframeSelect.value;
+
+      document.getElementById('pairValue').textContent = symbol;
+      document.getElementById('chartTitle').textContent = `${symbol} · ${timeframe}`;
+      document.getElementById('priceValue').textContent = fmtPrice(data.last_price);
+      document.getElementById('candleValue').textContent = data.last_closed_candle
+        ? `Closed ${fmtTime(data.last_closed_candle)}`
+        : (data.message || 'No candle loaded');
+
+      const ageMinutes = Math.floor((data.data_age_seconds || 0) / 60);
+      setStatus(data.status, data.status === 'ready' ? `Latest closed candle · ${ageMinutes}m old` : data.message);
+      renderSignals(data.signals || []);
+      drawChart(data.candles || []);
+    }
+
+    async function loadDashboard() {
+      const query = new URLSearchParams({ symbol: symbolSelect.value, timeframe: timeframeSelect.value });
+      try {
+        const response = await fetch(`/api/dashboard?${query}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Failed to load dashboard data');
+        render(data);
+      } catch (error) {
+        notify(error.message);
+      }
+    }
+
+    async function refreshMarket() {
+      refreshButton.disabled = true;
+      refreshButton.textContent = 'Refreshing…';
+      try {
+        const response = await fetch('/api/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symbol: symbolSelect.value, timeframe: timeframeSelect.value })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Refresh failed');
+        render(data);
+        notify(`${data.refresh?.saved_candles || 0} completed candles saved from Twelve Data.`);
+        if (!refreshTimer) refreshTimer = setInterval(refreshMarket, 60000);
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = 'Refresh market data';
+      }
+    }
+
+    async function seedDemoData() {
+      loadDemoBtn.disabled = true;
+      loadDemoBtn.textContent = 'Generating…';
+      try {
+        const response = await fetch('/api/demo-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            symbols: [symbolSelect.value],
+            timeframes: [timeframeSelect.value],
+            bars: 500
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'Failed to seed demo data');
+        render(data);
+        notify(`Loaded ${data.demo_seed?.saved_candles || 0} sample candles. Terminal is active.`);
+      } catch (error) {
+        notify(error.message);
+      } finally {
+        loadDemoBtn.disabled = false;
+        loadDemoBtn.textContent = 'Load Demo Data';
+      }
+    }
+
+    // Backtest Execution
+    document.getElementById('backtestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnRunBacktest');
+      btn.disabled = true;
+      btn.textContent = 'Running Backtest…';
+
+      const payload = {
+        strategy: document.getElementById('btStrategy').value,
+        symbol: document.getElementById('btSymbol').value,
+        timeframe: document.getElementById('btTimeframe').value,
+        split: document.getElementById('btSplit').value,
+        rr: parseFloat(document.getElementById('btRR').value) || 2.0,
+        risk: parseFloat(document.getElementById('btRisk').value) || 1.0,
+      };
+
+      try {
+        const res = await fetch('/api/backtest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Backtest failed');
+        renderBacktestResults(data);
+        notify(`Backtest complete: ${data.metrics.trades} trades executed on ${data.split} split.`);
+      } catch (err) {
+        notify(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run Backtest';
+      }
+    });
+
+    function renderBacktestResults(data) {
+      const m = data.metrics || {};
+      document.getElementById('btTrades').textContent = m.trades || 0;
+      document.getElementById('btWinsLosses').textContent = `${m.wins || 0} wins / ${m.losses || 0} losses`;
+      document.getElementById('btWinRate').textContent = m.win_rate_pct != null ? `${m.win_rate_pct.toFixed(1)}%` : '--';
+      if (m.win_rate_ci95_pct) {
+        document.getElementById('btWinCI').textContent = `95% CI: ${m.win_rate_ci95_pct[0].toFixed(1)}% - ${m.win_rate_ci95_pct[1].toFixed(1)}%`;
+      }
+      document.getElementById('btExpectancy').textContent = m.expectancy_r != null ? `${m.expectancy_r > 0 ? '+' : ''}${m.expectancy_r.toFixed(3)}R` : '--';
+      if (m.expectancy_ci95_r && m.expectancy_ci95_r[0] != null) {
+        document.getElementById('btExpCI').textContent = `95% CI: ${m.expectancy_ci95_r[0].toFixed(2)} to ${m.expectancy_ci95_r[1].toFixed(2)}`;
+      }
+      document.getElementById('btProfitFactor').textContent = m.profit_factor != null ? m.profit_factor.toFixed(2) : '--';
+      document.getElementById('btBreakeven').textContent = m.breakeven_win_rate_pct != null ? `Breakeven: ${m.breakeven_win_rate_pct.toFixed(1)}%` : '';
+      document.getElementById('btNetReturn').textContent = m.net_return_pct != null ? `${m.net_return_pct > 0 ? '+' : ''}${m.net_return_pct.toFixed(1)}%` : '--';
+      document.getElementById('btMaxDD').textContent = m.max_drawdown_pct != null ? `-${m.max_drawdown_pct.toFixed(1)}%` : '--';
+      document.getElementById('btLosingStreak').textContent = `Losing streak: ${m.longest_losing_streak || 0}`;
+
+      document.getElementById('btWindowRange').textContent = `${data.window_start.slice(0, 10)} -> ${data.window_end.slice(0, 10)} (${data.candle_count} BARS)`;
+
+      // Draw Equity Curve
+      drawEquityCurve(data.equity_curve || []);
+
+      // Populate Trades Table
+      const tb = document.getElementById('btTradeTableBody');
+      const trades = data.trades || [];
+      document.getElementById('btTradeTableCount').textContent = `Showing ${trades.length} trades`;
+      if (!trades.length) {
+        tb.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted); padding:20px;">No trades generated in this window.</td></tr>';
+        return;
+      }
+      tb.innerHTML = trades.map(t => `
+        <tr>
+          <td>${t.entry_ts.slice(0, 19).replace('T', ' ')}</td>
+          <td>${t.exit_ts.slice(0, 19).replace('T', ' ')}</td>
+          <td><span class="side ${t.direction.toLowerCase()}">${t.direction}</span></td>
+          <td>${t.entry}</td>
+          <td>${t.exit}</td>
+          <td style="color:${t.r >= 0 ? 'var(--green)' : 'var(--red)'}; font-weight:600;">${t.r > 0 ? '+' : ''}${t.r}R</td>
+          <td>${t.exit_reason.toUpperCase()}</td>
+          <td>${t.bars_held}</td>
+        </tr>
+      `).join('');
+    }
+
+    function drawEquityCurve(curve) {
+      if (!equityCanvas) return;
+      const rect = equityCanvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      equityCanvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      equityCanvas.height = Math.max(1, Math.floor(rect.height * ratio));
+      const ctx = equityCanvas.getContext('2d');
+      ctx.scale(ratio, ratio);
+      const width = rect.width;
+      const height = rect.height;
+      ctx.clearRect(0, 0, width, height);
+
+      if (!curve || curve.length < 2) {
+        ctx.fillStyle = '#67786f';
+        ctx.font = '12px DM Sans, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No trades to plot', width / 2, height / 2);
+        return;
+      }
+
+      const padding = { top: 20, right: 65, bottom: 20, left: 20 };
+      const chartW = width - padding.left - padding.right;
+      const chartH = height - padding.top - padding.bottom;
+
+      const minVal = Math.min(...curve);
+      const maxVal = Math.max(...curve);
+      const range = Math.max(maxVal - minVal, 100);
+
+      const getY = (val) => padding.top + (maxVal - val) / range * chartH;
+      const getX = (idx) => padding.left + (idx / (curve.length - 1)) * chartW;
+
+      // Draw Grid
+      ctx.strokeStyle = '#e6ebe6';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 3; i++) {
+        const v = minVal + (maxVal - minVal) * (i / 3);
+        const gy = getY(v);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, gy);
+        ctx.lineTo(width - padding.right, gy);
+        ctx.stroke();
+
+        ctx.fillStyle = '#7a8c82';
+        ctx.font = '10px IBM Plex Mono, monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`$${Math.round(v).toLocaleString()}`, width - padding.right + 6, gy + 3);
+      }
+
+      // Curve
+      ctx.beginPath();
+      curve.forEach((v, idx) => {
+        const x = getX(idx);
+        const y = getY(v);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      const profitable = curve[curve.length - 1] >= curve[0];
+      ctx.strokeStyle = profitable ? '#177b58' : '#bd5546';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    // Load Signal History Table
+    async function loadSignalHistory() {
+      const tb = document.getElementById('historyTableBody');
+      try {
+        const res = await fetch('/api/signals/history?limit=50');
+        const list = await res.json();
+        if (!list || !list.length) {
+          tb.innerHTML = '<tr><td colspan="11" style="text-align:center; color:var(--muted); padding:24px;">No signals recorded in database yet.</td></tr>';
+          return;
+        }
+        tb.innerHTML = list.map(s => `
+          <tr>
+            <td>${s.detected_at}</td>
+            <td><strong>${s.symbol}</strong></td>
+            <td>${s.timeframe}</td>
+            <td>${s.strategy.replaceAll('_', ' ')}</td>
+            <td><span class="side ${s.direction.toLowerCase()}">${s.direction}</span></td>
+            <td><strong>${s.confidence}</strong>/100</td>
+            <td>${fmtPrice(s.price, s.symbol)}</td>
+            <td>${fmtPrice(s.stop, s.symbol)}</td>
+            <td>${fmtPrice(s.target, s.symbol)}</td>
+            <td>${s.stop_pips}</td>
+            <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${s.reasoning}">${s.reasoning}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tb.innerHTML = `<tr><td colspan="11" style="color:var(--red); padding:16px;">Error loading signal log: ${err.message}</td></tr>`;
+      }
+    }
+    document.getElementById('btnRefreshHistory').addEventListener('click', loadSignalHistory);
+
+    // Event Listeners
+    symbolSelect.addEventListener('change', loadDashboard);
+    timeframeSelect.addEventListener('change', loadDashboard);
+    refreshButton.addEventListener('click', refreshMarket);
+    loadDemoBtn.addEventListener('click', seedDemoData);
+    document.getElementById('balance').addEventListener('input', updatePositionSize);
+    document.getElementById('riskPercent').addEventListener('input', updatePositionSize);
+
+    document.getElementById('alertToggle').addEventListener('change', async (event) => {
+      if (!event.target.checked) {
+        alertEnabled = false;
+        document.getElementById('alertStatus').textContent = 'Off';
+        return;
+      }
+      if (!('Notification' in window)) {
+        event.target.checked = false;
+        notify('Browser notifications are not supported in this environment.');
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      alertEnabled = permission === 'granted';
+      event.target.checked = alertEnabled;
+      document.getElementById('alertStatus').textContent = alertEnabled ? 'On · Setup alerts enabled' : 'Permission denied';
+    });
+
+    window.addEventListener('resize', () => {
+      drawChart(dashboard?.candles || []);
+    });
+
+    // Initial load
+    loadDashboard();
+  </script>
+</body>
+</html>
